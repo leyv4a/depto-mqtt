@@ -9,47 +9,44 @@ config_dir = os.path.join(os.path.dirname(__file__), "../config")
 with open(os.path.join(config_dir, "settings.json")) as config_file:
     config = json.load(config_file)
 
-temperature_threshold = config["thresholds"]["temperatura"]
-water_leakage_alert = config["thresholds"]["fuga_activa"]
+thresholds = config["thresholds"]
 
+# Función para manejar mensajes
 def on_message(client, userdata, msg):
-    """Callback para procesar los mensajes recibidos."""
+    topic = msg.topic
     payload = msg.payload.decode()
-    print(f"[MONITOR] Mensaje recibido en {msg.topic}: {payload}")
+    print(f"[MONITOR] Mensaje recibido en {topic}: {payload}")
     
-    # Procesar el mensaje según el tópico
-    topic_parts = msg.topic.split("/")
-    if len(topic_parts) >= 5 and topic_parts[4] == "temperatura":
-        try:
-            temperature = float(payload)
-            if temperature > temperature_threshold:
-                alert_topic = f"alerts/{topic_parts[1]}/temperatura"
-                alert_message = f"ALERTA: Temperatura crítica detectada: {temperature}°C"
-                client.publish(alert_topic, alert_message, retain=True)
-                print(f"[ALERTA] {alert_message}")
-        except ValueError:
-            print("[ERROR] Valor de temperatura inválido.")
-    elif len(topic_parts) >= 5 and topic_parts[4] == "fuga_agua":
-        if payload.lower() == "true":
-            alert_topic = f"alerts/{topic_parts[1]}/fuga_agua"
-            alert_message = "ALERTA: Detección de fuga de agua."
+    # Procesar alertas críticas
+    if "temperatura" in topic:
+        temperatura = float(payload)
+        if temperatura > thresholds["temperatura"]:
+            alert_topic = f"alerts/{topic.split('/')[1]}/temperature"
+            alert_message = f"ALERTA: Temperatura crítica detectada: {temperatura}°C"
             client.publish(alert_topic, alert_message, retain=True)
-            print(f"[ALERTA] {alert_message}")
+            print(f"[MONITOR] Publicado {alert_message} en {alert_topic}")
 
+# Publicar configuración del sistema
+def publish_config(client):
+    config_topic = "system/config"
+    config_payload = json.dumps(thresholds)
+    client.publish(config_topic, config_payload, retain=True)
+    print(f"[CONFIG] Configuración publicada en {config_topic}: {config_payload}")
+
+# Configuración del cliente
 if __name__ == "__main__":
     client_id = "monitor_client"
     client = create_mqtt_client(client_id)
-    
-    # Configurar el callback para procesar mensajes
     client.on_message = on_message
 
-    # Suscribirse a los tópicos relevantes
+    # Publicar configuración del sistema
+    publish_config(client)
+
+    # Suscribirse a los tópicos
     topics = [
-        ("departamentos/+/1/+/+", 0),  # Monitoreo por piso (ejemplo: piso 1)
-        ("departamentos/+/+/+/temperatura", 0),  # Monitoreo por tipo de sensor
-        ("departamentos/+/+/+/fuga_agua", 0),  # Monitoreo de fugas de agua
+        ("departamentos/+/+/+/temperatura", 0),
+        ("departamentos/+/+/+/fuga_agua", 0),
     ]
-    
     for topic, qos in topics:
         client.subscribe(topic, qos)
         print(f"[MONITOR] Suscrito al tópico: {topic}")

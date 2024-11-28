@@ -1,27 +1,26 @@
 {
-    "departamento1": {
+  "departamento1": {
       "ubicacion": {
-        "edificio": "A",
-        "piso": 1,
-        "habitacion": 101
+          "edificio": "A",
+          "piso": 1,
+          "habitacion": 101
       },
       "sensores": {
-        "temperatura": {
-          "min": 18.0,
-          "max": 30.0,
-          "umbral_alerta": 28.0
-        },
-        "fuga_agua": {
-          "probabilidad_activacion": 0.1
-        }
+          "temperatura": {
+              "min": 18.0,
+              "max": 30.0,
+              "umbral_alerta": 28.0
+          },
+          "fuga_agua": {
+              "probabilidad_activacion": 0.1
+          }
       },
       "publicacion": {
-        "intervalo_segundos": 5
+          "intervalo_segundos": 5
       }
-    },
-      "thresholds": {
-          "temperatura": 30.0,
-          "fuga_activa": true
-    
+  },
+  "thresholds": {
+      "temperatura": 30.0,
+      "fuga_activa": true
   }
-  }
+}

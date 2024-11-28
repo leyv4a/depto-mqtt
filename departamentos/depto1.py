@@ -1,5 +1,5 @@
 import json
-import random
+from random import uniform, random
 import time
 import sys
 import os
@@ -12,51 +12,43 @@ with open(os.path.join(config_dir, "settings.json")) as config_file:
 # with open("../config/settings.json") as config_file:
     config = json.load(config_file)
 
-# Setear configuracion
-depto_config = config["departamento1"]
-ubicacion = depto_config["ubicacion"]
-sensores_config = depto_config["sensores"]
-intervalo = depto_config["publicacion"]["intervalo_segundos"]
+config = config["departamento1"]
+ubicacion = config["ubicacion"]
+sensores = config["sensores"]
+intervalo = config["publicacion"]["intervalo_segundos"]
 
-# Obtener datos de ubicación
-edificio = ubicacion["edificio"]
-piso = ubicacion["piso"]
-habitacion = ubicacion["habitacion"]
+# Extraer umbrales
+umbral_temp = sensores["temperatura"]["umbral_alerta"]
+prob_fuga = sensores["fuga_agua"]["probabilidad_activacion"]
 
 # Crear cliente MQTT
-client_id = f"depto1-{edificio}-{piso}-{habitacion}"
+client_id = f"sensor-depto-{ubicacion['edificio']}-{ubicacion['habitacion']}"
 client = create_mqtt_client(client_id)
+client.loop_start()
 
-# Publicación de datos simulados
-def publicar_datos():
+# Generar tópicos
+topic_temp = f"departamentos/{ubicacion['edificio']}/{ubicacion['piso']}/{ubicacion['habitacion']}/temperatura"
+topic_fuga = f"departamentos/{ubicacion['edificio']}/{ubicacion['piso']}/{ubicacion['habitacion']}/fuga_agua"
+
+print(f"[DEPTO1] Publicando datos en {topic_temp} y {topic_fuga}")
+
+# Publicar datos de sensores
+try:
     while True:
-        # Simular temperatura
-        temperatura = round(
-            random.uniform(
-                sensores_config["temperatura"]["min"], 
-                sensores_config["temperatura"]["max"]
-            ), 2
-        )
-        topico_temperatura = f"departamentos/{edificio}/{piso}/{habitacion}/temperatura"
-        client.publish(topico_temperatura, temperatura, retain=True)
-        print(f"Publicado: {temperatura} en {topico_temperatura}")
-
-        # Simular fuga de agua
-        if random.random() < sensores_config["fuga_agua"]["probabilidad_activacion"]:
-            fuga_estado = "ALERTA"
-        else:
-            fuga_estado = "SIN_FUGA"
-        topico_fuga = f"departamentos/{edificio}/{piso}/{habitacion}/fuga_agua"
-        client.publish(topico_fuga, fuga_estado, retain=True)
-        print(f"Publicado: {fuga_estado} en {topico_fuga}")
-
-        # Esperar antes de la próxima publicación
+        temperatura = round(uniform(sensores["temperatura"]["min"], sensores["temperatura"]["max"]), 2)
+        fuga_agua = "ALERTA" if random() < prob_fuga else "SIN_FUGA"
+        
+        # Publicar temperatura
+        client.publish(topic_temp, temperatura, retain=True)
+        print(f"[DEPTO1] Publicado {temperatura} en {topic_temp}")
+        
+        # Publicar estado de fuga
+        client.publish(topic_fuga, fuga_agua, retain=True)
+        print(f"[DEPTO1] Publicado {fuga_agua} en {topic_fuga}")
+        
         time.sleep(intervalo)
-
-if __name__ == "__main__":
-    try:
-        client.loop_start()
-        publicar_datos()
-    except KeyboardInterrupt:
-        client.loop_stop()
-        print("\nSimulación finalizada.")
+except KeyboardInterrupt:
+    print("[DEPTO1] Finalizando publicación...")
+finally:
+    client.loop_stop()
+    client.disconnect()
