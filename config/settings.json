@@ -2,8 +2,7 @@
   "departamento1": {
       "ubicacion": {
           "edificio": "A",
-          "piso": 1,
-          "habitacion": 101
+          "piso": 1
       },
       "sensores": {
           "temperatura": {
@@ -12,7 +11,26 @@
               "umbral_alerta": 28.0
           },
           "fuga_agua": {
-              "probabilidad_activacion": 0.1
+              "probabilidad_activacion": 60
+          }
+      },
+      "publicacion": {
+          "intervalo_segundos": 5
+      }
+  },
+  "departamento2": {
+      "ubicacion": {
+          "edificio": "B",
+          "piso": 1
+      },
+      "sensores": {
+          "temperatura": {
+              "min": 18.0,
+              "max": 30.0,
+              "umbral_alerta": 28.0
+          },
+          "fuga_agua": {
+              "probabilidad_activacion": 22
           }
       },
       "publicacion": {

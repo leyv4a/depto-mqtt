@@ -11,27 +11,55 @@ with open(os.path.join(config_dir, "settings.json")) as config_file:
 
 thresholds = config["thresholds"]
 
+def send_hvac_command(client, action, target_temperature=None):
+    """Envia un comando al HVAC."""
+    command_topic = "control/A/hvac/command"
+    command_payload = {
+        "action": action,
+        "temperatura_objetivo": target_temperature
+    }
+    client.publish(command_topic, json.dumps(command_payload))
+    print(f"[MONITOR] Comando enviado al HVAC: {command_payload}", flush=True)
+
 # Función para manejar mensajes
+# def on_message(client, userdata, msg):
+#     topic = msg.topic
+#     payload = msg.payload.decode()
+#     print(f"[MONITOR] Mensaje recibido en {topic}: {payload}", flush=True)
+    
+#     # Clasificar los mensajes según el wildcard
+#     if topic.startswith("departamentos/") and "/temperatura" in topic:
+#         print(f"[MONITOR] Temperatura detectada: {payload} en {topic}", flush=True)
+    
+#     elif topic.startswith("alerts/"):
+#         print(f"[ALERTA] Mensaje crítico recibido: {payload} en {topic}", flush=True)
+    
+#     elif topic.startswith("control/"):
+#         print(f"[CONTROL] Comando recibido: {payload} en {topic}", flush=True)
 def on_message(client, userdata, msg):
     topic = msg.topic
     payload = msg.payload.decode()
-    print(f"[MONITOR] Mensaje recibido en {topic}: {payload}")
+    print(f"[MONITOR] Mensaje recibido en {topic}: {payload}", flush=True)
     
-    # Procesar alertas críticas
-    if "temperatura" in topic:
-        temperatura = float(payload)
-        if temperatura > thresholds["temperatura"]:
-            alert_topic = f"alerts/{topic.split('/')[1]}/temperature"
-            alert_message = f"ALERTA: Temperatura crítica detectada: {temperatura}°C"
-            client.publish(alert_topic, alert_message, retain=True)
-            print(f"[MONITOR] Publicado {alert_message} en {alert_topic}")
+    if topic.startswith("alerts/"):
+        if "Temperatura alta" in payload:
+            print("[MONITOR] Temperatura alta detectada. Enviando comando al HVAC...", flush=True)
+            send_hvac_command(client, action="ON", target_temperature=22)
+        else:
+            print(f"[ALERTA] Mensaje crítico recibido: {payload} en {topic}", flush=True)
+
+    elif topic.startswith("control/A/hvac/status"):
+        print(f"[MONITOR] Estado del HVAC actualizado: {payload}", flush=True)
+
+    elif topic.startswith("control/"):
+        print(f"[CONTROL] Comando recibido: {payload} en {topic}", flush=True)
 
 # Publicar configuración del sistema
 def publish_config(client):
     config_topic = "system/config"
     config_payload = json.dumps(thresholds)
     client.publish(config_topic, config_payload, retain=True)
-    print(f"[CONFIG] Configuración publicada en {config_topic}: {config_payload}")
+    print(f"[CONFIG] Configuración publicada en {config_topic}: {config_payload}", flush=True)
 
 # Configuración del cliente
 if __name__ == "__main__":
@@ -42,14 +70,16 @@ if __name__ == "__main__":
     # Publicar configuración del sistema
     publish_config(client)
 
-    # Suscribirse a los tópicos
+    # Suscribirse a los tópicos con wildcards
     topics = [
-        ("departamentos/+/+/+/temperatura", 0),
-        ("departamentos/+/+/+/fuga_agua", 0),
+        # ("departamentos/+/+/temperatura", 0),  # Monitoreo por tipo de sensor (temperatura)
+        ("alerts/+/+", 0),                  # Monitoreo de alertas generales
+        ("control/+/hvac/#", 0),            # Monitoreo del sistema de control (HVAC)
+        ("control/A/hvac/status", 0)  # Estado del HVAC
     ]
     for topic, qos in topics:
         client.subscribe(topic, qos)
-        print(f"[MONITOR] Suscrito al tópico: {topic}")
+        print(f"[MONITOR] Suscrito al tópico: {topic}", flush=True)
 
-    print("[MONITOR] Escuchando mensajes...")
+    print("[MONITOR] Escuchando mensajes...", flush=True)
     client.loop_forever()
