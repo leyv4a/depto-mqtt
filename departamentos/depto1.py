@@ -33,8 +33,8 @@ def publicar_datos():
         # Simular temperatura
         temperatura = round(
             random.uniform(
-                sensores_config["temperature"]["min"], 
-                sensores_config["temperature"]["max"]
+                sensores_config["temperatura"]["min"], 
+                sensores_config["temperatura"]["max"]
             ), 2
         )
         topico_temperatura = f"departamentos/{edificio}/{piso}/{habitacion}/temperatura"

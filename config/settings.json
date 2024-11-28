@@ -6,7 +6,7 @@
         "habitacion": 101
       },
       "sensores": {
-        "temperature": {
+        "temperatura": {
           "min": 18.0,
           "max": 30.0,
           "umbral_alerta": 28.0
@@ -18,5 +18,10 @@
       "publicacion": {
         "intervalo_segundos": 5
       }
-    }
+    },
+      "thresholds": {
+          "temperatura": 30.0,
+          "fuga_activa": true
+    
+  }
   }
