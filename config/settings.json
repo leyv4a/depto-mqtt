@@ -1,0 +1,22 @@
+{
+    "departamento1": {
+      "ubicacion": {
+        "edificio": "A",
+        "piso": 1,
+        "habitacion": 101
+      },
+      "sensores": {
+        "temperature": {
+          "min": 18.0,
+          "max": 30.0,
+          "umbral_alerta": 28.0
+        },
+        "fuga_agua": {
+          "probabilidad_activacion": 0.1
+        }
+      },
+      "publicacion": {
+        "intervalo_segundos": 5
+      }
+    }
+  }
