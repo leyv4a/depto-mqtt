@@ -11,7 +11,7 @@
               "umbral_alerta": 28.0
           },
           "fuga_agua": {
-              "probabilidad_activacion": 60
+              "probabilidad_activacion": 0.2
           }
       },
       "publicacion": {
@@ -30,7 +30,7 @@
               "umbral_alerta": 28.0
           },
           "fuga_agua": {
-              "probabilidad_activacion": 22
+              "probabilidad_activacion": 0.6
           }
       },
       "publicacion": {

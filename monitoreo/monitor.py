@@ -12,8 +12,9 @@ with open(os.path.join(config_dir, "settings.json")) as config_file:
 
 thresholds = config["thresholds"]
 
-def send_hvac_command(client, action, temperatura_objetivo=None):
+def send_hvac_command(client, action, temperatura_objetivo):
     """Envia un comando al HVAC."""
+    print(f"ENVIANDO COMANDO SEND_HVAC")
     command_topic = "control/A/hvac/command"
     command_payload = {
         "action": action,
@@ -23,27 +24,14 @@ def send_hvac_command(client, action, temperatura_objetivo=None):
     print(f"[MONITOR] Comando enviado al HVAC: {command_payload}", flush=True)
 
 # Función para manejar mensajes
-# def on_message(client, userdata, msg):
-#     topic = msg.topic
-#     payload = msg.payload.decode()
-#     print(f"[MONITOR] Mensaje recibido en {topic}: {payload}", flush=True)
-    
-#     # Clasificar los mensajes según el wildcard
-#     if topic.startswith("departamentos/") and "/temperatura" in topic:
-#         print(f"[MONITOR] Temperatura detectada: {payload} en {topic}", flush=True)
-    
-#     elif topic.startswith("alerts/"):
-#         print(f"[ALERTA] Mensaje crítico recibido: {payload} en {topic}", flush=True)
-    
-#     elif topic.startswith("control/"):
-#         print(f"[CONTROL] Comando recibido: {payload} en {topic}", flush=True)
+
 def on_message(client, userdata, msg):
     topic = msg.topic
     payload = msg.payload.decode()
-    print(f"[MONITOR] Mensaje recibido en {topic}: {payload}", flush=True)
+    # print(f"[MONITOR] Mensaje recibido en {topic}: {payload}", flush=True)
     
     if topic.startswith("alerts/"):
-        if "Temperatura alta" in payload:
+        if "ALERTA: Temperatura alta" in payload:
             print("[MONITOR] Temperatura alta detectada. Enviando comando al HVAC...", flush=True)
             send_hvac_command(client, action="ON", temperatura_objetivo=25.0)
         else:
@@ -68,10 +56,10 @@ if __name__ == "__main__":
     client = create_mqtt_client(client_id)
     client.on_message = on_message
 
-    # Publicar configuración del sistema
+    # Publicar config del sistema
     publish_config(client)
 
-    # Suscribirse a los tópicos con wildcards
+    # Suscribirse a los topicos con wildcards
     topics = [
         # ("departamentos/+/+/temperatura", 0),  # Monitoreo por tipo de sensor (temperatura)
         ("alerts/+/+", 0),                  # Monitoreo de alertas generales
@@ -83,4 +71,4 @@ if __name__ == "__main__":
         print(f"[MONITOR] Suscrito al topico: {topic}", flush=True)
 
     print("[MONITOR] Escuchando mensajes...", flush=True)
-    client.loop_start()
+    client.loop_forever()

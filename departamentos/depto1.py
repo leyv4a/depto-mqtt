@@ -32,7 +32,6 @@ topic_temp = f"departamentos/{ubicacion['edificio']}/{ubicacion['piso']}/tempera
 topic_fuga = f"departamentos/{ubicacion['edificio']}/{ubicacion['piso']}/fuga_agua"
 topic_alerta = f"alerts/{ubicacion['edificio']}/{ubicacion['piso']}"
 
-client.loop_start()
 print(f"[DEPTO1] Publicando datos en {topic_temp} y {topic_fuga}", flush=True)
 
 # Publicar datos de sensores
@@ -43,11 +42,13 @@ try:
         
         # Publicar temperatura
         client.publish(topic_temp, temperatura, retain=True)
-        print(f"[DEPTO1] Publicado {temperatura} en {topic_temp}", flush=True)
+        # SE COMENTARON PARA EVITAR EL SPAM
+        # print(f"[DEPTO1] Publicado {temperatura} en {topic_temp}", flush=True)
 
          # Publicar estado de fuga
         client.publish(topic_fuga, fuga_agua, retain=True)
-        print(f"[DEPTO1] Publicado {fuga_agua} en {topic_fuga}", flush=True)
+         # SE COMENTARON PARA EVITAR EL SPAM
+        # print(f"[DEPTO1] Publicado {fuga_agua} en {topic_fuga}", flush=True)
         
 
           # Verificar y publicar alertas

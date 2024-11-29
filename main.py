@@ -7,11 +7,9 @@ import sys
 base_dir = os.path.dirname(os.path.abspath(__file__))
 scripts = [
     os.path.join(base_dir, "departamentos/depto1.py"),
-    # os.path.join(base_dir, "departamentos/depto2.py"),
+    os.path.join(base_dir, "departamentos/depto2.py"),
     os.path.join(base_dir, "control/hvac_control.py"),
     os.path.join(base_dir, "monitoreo/monitor.py"),
-    
-
 ]
 
 processes = []
@@ -27,18 +25,22 @@ def start_scripts():
     stderr=subprocess.PIPE,
     text=True,
     bufsize=1,
-    env=os.environ.copy()
+    env=os.environ.copy(),
+    encoding='latin1',
+    errors='ignore'  # Evita que se generen errores de codificación
 )
         processes.append((script, process))
         time.sleep(5)  # Retraso para evitar conflictos
 
 import threading
 
+
 def stream_reader(pipe, callback):
     """Lee las lineas de un flujo (pipe) y ejecuta un callback por cada línea."""
     for line in iter(pipe.readline, ''):
         callback(line.strip())
     pipe.close()
+
 
 def monitor_processes():
     """Monitorea las salidas de los procesos en tiempo real usando hilos."""
@@ -68,8 +70,43 @@ def monitor_processes():
         while any(t.is_alive() for t in threads):
             time.sleep(0.1)
 
+        # Espera a que los hilos terminen antes de continuar
+        for t in threads:
+            t.join()
+
     except KeyboardInterrupt:
         print("\n[MAIN] Interrupcion detectada. Cerrando...")
+
+# def monitor_processes():
+#     """Monitorea las salidas de los procesos en tiempo real usando hilos."""
+#     global processes
+#     try:
+#         threads = []
+#         for script, process in processes:
+#             # Maneja stdout
+#             t_stdout = threading.Thread(
+#                 target=stream_reader,
+#                 args=(process.stdout, lambda line: print(f"[{script}][STDOUT]: {line}"))
+#             )
+#             t_stdout.daemon = True
+#             t_stdout.start()
+#             threads.append(t_stdout)
+
+#             # Maneja stderr
+#             t_stderr = threading.Thread(
+#                 target=stream_reader,
+#                 args=(process.stderr, lambda line: print(f"[{script}][STDERR]: {line}"))
+#             )
+#             t_stderr.daemon = True
+#             t_stderr.start()
+#             threads.append(t_stderr)
+
+#         # Mantén el proceso principal corriendo
+#         while any(t.is_alive() for t in threads):
+#             time.sleep(0.1)
+
+#     except KeyboardInterrupt:
+#         print("\n[MAIN] Interrupcion detectada. Cerrando...")
 
 def stop_scripts():
     """Detiene todos los scripts en ejecución."""

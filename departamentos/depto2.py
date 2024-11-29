@@ -41,11 +41,13 @@ try:
         
         # Publicar temperatura
         client.publish(topic_temp, temperatura, retain=True)
-        print(f"[DEPTO2] Publicado {temperatura} en {topic_temp}", flush=True)
+         # SE COMENTARON PARA EVITAR EL SPAM
+        # print(f"[DEPTO2] Publicado {temperatura} en {topic_temp}", flush=True)
         
         # Publicar estado de fuga
         client.publish(topic_fuga, fuga_agua, retain=True)
-        print(f"[DEPTO2] Publicado {fuga_agua} en {topic_fuga}", flush=True)
+         # SE COMENTARON PARA EVITAR EL SPAM
+        # print(f"[DEPTO2] Publicado {fuga_agua} en {topic_fuga}", flush=True)
 
                # Verificar y publicar alertas
         if temperatura > umbral_temp:
@@ -63,4 +65,4 @@ except KeyboardInterrupt:
     print("[DEPTO2] Finalizando publicación...", flush=True)
 finally:
     client.loop_stop()
-    client.disconnect()
+    client.disconnect()  

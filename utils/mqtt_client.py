@@ -33,12 +33,17 @@ def create_mqtt_client(client_id):
      #cliente
     client = mqtt.Client(client_id)
     
+    
     #callbacks
     client.on_connect = on_connect
     client.on_disconnect = on_disconnect
     client.on_message = on_message
     
     #  broker 
-    client.connect(BROKER, PORT, KEEPALIVE)
+    # client.connect(BROKER, PORT, KEEPALIVE)
+    try:
+       client.connect(BROKER, PORT, KEEPALIVE)
+    except TimeoutError:
+       print("Error: Conexión al broker MQTT agotada.")
     
-    return client
+    return client  
