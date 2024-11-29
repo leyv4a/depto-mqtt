@@ -7,7 +7,7 @@ import sys
 base_dir = os.path.dirname(os.path.abspath(__file__))
 scripts = [
     os.path.join(base_dir, "departamentos/depto1.py"),
-    os.path.join(base_dir, "departamentos/depto2.py"),
+    # os.path.join(base_dir, "departamentos/depto2.py"),
     os.path.join(base_dir, "control/hvac_control.py"),
     os.path.join(base_dir, "monitoreo/monitor.py"),
     
@@ -35,7 +35,7 @@ def start_scripts():
 import threading
 
 def stream_reader(pipe, callback):
-    """Lee las líneas de un flujo (pipe) y ejecuta un callback por cada línea."""
+    """Lee las lineas de un flujo (pipe) y ejecuta un callback por cada línea."""
     for line in iter(pipe.readline, ''):
         callback(line.strip())
     pipe.close()
@@ -69,7 +69,7 @@ def monitor_processes():
             time.sleep(0.1)
 
     except KeyboardInterrupt:
-        print("\n[MAIN] Interrupción detectada. Cerrando...")
+        print("\n[MAIN] Interrupcion detectada. Cerrando...")
 
 def stop_scripts():
     """Detiene todos los scripts en ejecución."""

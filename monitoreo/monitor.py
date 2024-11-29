@@ -1,6 +1,7 @@
 import sys
 import os
 import json
+sys.stdout.reconfigure(encoding='utf-8')
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../")))
 from utils.mqtt_client import create_mqtt_client
 
@@ -11,12 +12,12 @@ with open(os.path.join(config_dir, "settings.json")) as config_file:
 
 thresholds = config["thresholds"]
 
-def send_hvac_command(client, action, target_temperature=None):
+def send_hvac_command(client, action, temperatura_objetivo=None):
     """Envia un comando al HVAC."""
     command_topic = "control/A/hvac/command"
     command_payload = {
         "action": action,
-        "temperatura_objetivo": target_temperature
+        "temperatura_objetivo": temperatura_objetivo
     }
     client.publish(command_topic, json.dumps(command_payload))
     print(f"[MONITOR] Comando enviado al HVAC: {command_payload}", flush=True)
@@ -44,9 +45,9 @@ def on_message(client, userdata, msg):
     if topic.startswith("alerts/"):
         if "Temperatura alta" in payload:
             print("[MONITOR] Temperatura alta detectada. Enviando comando al HVAC...", flush=True)
-            send_hvac_command(client, action="ON", target_temperature=22)
+            send_hvac_command(client, action="ON", temperatura_objetivo=25.0)
         else:
-            print(f"[ALERTA] Mensaje crítico recibido: {payload} en {topic}", flush=True)
+            print(f"[ALERTA] Mensaje critico recibido: {payload} en {topic}", flush=True)
 
     elif topic.startswith("control/A/hvac/status"):
         print(f"[MONITOR] Estado del HVAC actualizado: {payload}", flush=True)
@@ -59,7 +60,7 @@ def publish_config(client):
     config_topic = "system/config"
     config_payload = json.dumps(thresholds)
     client.publish(config_topic, config_payload, retain=True)
-    print(f"[CONFIG] Configuración publicada en {config_topic}: {config_payload}", flush=True)
+    print(f"[CONFIG] Configuracion publicada en {config_topic}: {config_payload}", flush=True)
 
 # Configuración del cliente
 if __name__ == "__main__":
@@ -79,7 +80,7 @@ if __name__ == "__main__":
     ]
     for topic, qos in topics:
         client.subscribe(topic, qos)
-        print(f"[MONITOR] Suscrito al tópico: {topic}", flush=True)
+        print(f"[MONITOR] Suscrito al topico: {topic}", flush=True)
 
     print("[MONITOR] Escuchando mensajes...", flush=True)
-    client.loop_forever()
+    client.loop_start()

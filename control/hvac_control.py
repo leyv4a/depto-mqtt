@@ -1,6 +1,7 @@
 import json
 import sys
 import os
+sys.stdout.reconfigure(encoding='utf-8')
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../")))
 from utils.mqtt_client import create_mqtt_client
 
@@ -40,7 +41,7 @@ def on_message(client, userdata, msg):
             publish_state(client)
 
         except json.JSONDecodeError:
-            print("[HVAC CONTROL] Error al procesar el comando: Formato JSON inválido.", flush=True)
+            print("[HVAC CONTROL] Error al procesar el comando: Formato JSON invalido.", flush=True)
 
 def publish_state(client):
     """Publica el estado actual del HVAC como mensaje retenido."""
@@ -57,7 +58,7 @@ if __name__ == "__main__":
     # Suscribirse al tópico de comandos HVAC
     command_topic = "control/A/hvac/command"
     client.subscribe(command_topic)
-    print(f"[HVAC CONTROL] Suscrito al tópico: {command_topic}", flush=True)
+    print(f"[HVAC CONTROL] Suscrito al topico: {command_topic}", flush=True)
 
     # Publicar estado inicial
     publish_state(client)
